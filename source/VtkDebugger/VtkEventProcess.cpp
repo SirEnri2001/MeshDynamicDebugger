@@ -8,10 +8,9 @@ void DebuggeeListener::SetDebugger(VtkDebugger* debugger) {
 void inTryBlock(DebuggeeListener* listener, VtkDebugger* debugger, LPVOID lpBase) {
 	
 	while (true) {
-		cout << "Waiting for readSem" << endl;
+		cout << "WAITING for debuggee" << endl;
 		WaitForSingleObject(listener->readSem, INFINITE);
-		cout << "received info from debuggee" << endl;
-		cout << (char*)lpBase << endl;
+		cout << "ORDER received" << endl;
 		json j = json::parse((char*)lpBase);
 
 		/*
@@ -46,7 +45,6 @@ void inTryBlock(DebuggeeListener* listener, VtkDebugger* debugger, LPVOID lpBase
 		}
 		debugger->Update();
 		ReleaseSemaphore(listener->writeSem, 1, NULL);
-		cout << "Released readSem" << endl;
 	}
 }
 
@@ -57,24 +55,22 @@ void subThreadLoop(LPVOID lpParamter)
 		SEMAPHORE_ALL_ACCESS,          // 访问标志
 		TRUE,                          // 继承标志
 		L"WAIT_SUBTHREAD");                   // 信号量名
-	cout << "subThreadLoop" << endl;
 	//while (threadInfo->UserData == nullptr) {
 	//	std::this_thread::yield();
 	//}
 	if (sem) {
 		ReleaseSemaphore(sem, 1, NULL);
 	}
-	cout << "Released WAIT_SUBTHREAD" << endl;
 	//DebuggeeListener* listener = (DebuggeeListener*)threadInfo->UserData;
 
 	VtkDebugger* debugger = listener->debugger;
 
 	LPVOID lpBase = MapViewOfFile(listener->shareMem, FILE_MAP_ALL_ACCESS, 0, 0, 0);
 	if (lpBase == NULL) {
-		cout << "Map View of File Failed!"<<lpBase << endl;
+		cout << "FATAL: map view failed"<<lpBase << endl;
 	}
 	else {
-		cout << "Map View of File Succeed" << endl;
+		cout << "INFO: debugger initialized" << endl;
 		inTryBlock(listener, debugger, lpBase);
 	}
 	if (lpBase) {

@@ -12,7 +12,7 @@ public:
 
 	void Execute(vtkObject*, unsigned long event, void*) override
 	{
-		window->Render();
+		//window->Render();
 	}
 
 private:
@@ -53,8 +53,9 @@ VtkDebugger::VtkDebugger() {
 
 	// Mesh preprocessing
 	meshReader->ReadFromInputStringOn();
+	meshMapper->SetInputData(meshData);
 	meshCbk = new VtkMeshCallback(
-		meshReader, meshMapper, &updatedModel);
+		meshData, meshMapper, &updatedModel);
 	meshActor->SetMapper(meshMapper);
 	meshActor->GetProperty()->EdgeVisibilityOn();
 	renderer->AddActor(meshActor);
@@ -76,6 +77,7 @@ void VtkDebugger::Start() {
 
 void VtkDebugger::HighlightVertex(double* v)
 {
+	cout << "COMMAND: HighlightVertex()" << endl;
 	if (!updatedVertices) {
 		m_Points->Reset();
 		verticesData->Reset();
@@ -85,6 +87,7 @@ void VtkDebugger::HighlightVertex(double* v)
 }
 
 void VtkDebugger::HighlightEdge(double* v1, double* v2) {
+	cout << "COMMAND: HighlightEdge()" << endl;
 	if (!updatedEdges) {
 		linePts->Reset();
 		lines->Reset();
@@ -104,14 +107,19 @@ void VtkDebugger::HighlightEdge(double* v1, double* v2) {
 
 void VtkDebugger::SetModel(std::string fileInMem)
 {
-	std::string str = fileInMem.c_str();
-	meshReader->SetInputString(str);
+	//meshReader->RemoveAllInputs();
+	meshReader = vtkSmartPointer<vtkPLYReader>::New();
+	meshReader->ReadFromInputStringOn();
+	meshReader->SetInputString(fileInMem);
+	meshReader->Update();
+	meshMapper->SetInputData(meshReader->GetOutput());
+	cout << "COMMAND: SetModel()" << endl;
 	updatedModel = true;
 }
 
 void VtkDebugger::Update() {
 	//interactor->InvokeEvent(vtkCommand::UserEvent + EVENT_UPDATE_OFFSET);
-	cout << "Performing callback" << endl;
+	cout << "COMMAND: Update()" << endl;
 	if (!updatedVertices) {
 		m_Points->Reset();
 		verticesData->Reset();
@@ -127,10 +135,11 @@ void VtkDebugger::Update() {
 	meshCbk->executeCallbackBehavior();
 	// DO NOT CALL Render() HERE! WILL FREEZE OTHERWISE
 	//renderWindow->Render();
-	//interactor->InvokeEvent(vtkCommand::UserEvent);
+	interactor->InvokeEvent(vtkCommand::UserEvent);
 	updatedModel = false;
 	updatedVertices = false;
 	updatedEdges = false;
 	linePtsIdx = 0;
+	
 }
 

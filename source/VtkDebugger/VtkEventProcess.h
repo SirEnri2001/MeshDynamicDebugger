@@ -20,7 +20,6 @@ class DebuggeeListener
 public:
 	DebuggeeListener()
 	{
-		cout << "DebuggeeListener()" << endl;
 		InitSemSharedMem();
 		debugger = nullptr;
 	}
@@ -30,7 +29,7 @@ public:
 	}
 
 	void StartListen() {
-		cout << "StartListen() " << endl;
+		cout << "INFO: worker thread created" << endl;
 		HANDLE hThread = CreateThread(NULL, 0, (LPTHREAD_START_ROUTINE)subThreadLoop, (LPVOID)this, 0, NULL);
 	}
 
@@ -38,7 +37,6 @@ public:
 
 	void InitSemSharedMem() 
 	{
-		cout << "InitSemSharedMem()" << endl;
 		HANDLE read_sem = OpenSemaphore(
 			SEMAPHORE_ALL_ACCESS,          // 访问标志
 			TRUE,                          // 继承标志
@@ -75,7 +73,7 @@ public:
 			cout << "Create Semaphore or Share Memory Failed!" << endl;
 		}
 		else {
-			cout << "Create Semaphore or Share Memory Succeed" << endl;
+			cout << "INFO: shared memory object created" << endl;
 
 		}
 	}

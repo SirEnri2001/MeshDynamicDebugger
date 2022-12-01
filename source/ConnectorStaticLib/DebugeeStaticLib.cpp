@@ -54,8 +54,12 @@ void DebuggerConnector::SetModel(std::string fileDumped, std::string inputExtens
     OpenMesh::IO::Options ropt;
     istringstream iss;
     iss.str(fileDumped);
-    OpenMesh::IO::read_mesh(mesh, iss, inputExtension, ropt);
-	SetModel(mesh);
+    if (OpenMesh::IO::read_mesh(mesh, iss, inputExtension, ropt)) {
+        SetModel(mesh);
+    }
+    else {
+        cerr << "DEBUGGER : CANNOT READ MESH" << endl;
+    }
 }
 
 void DebuggerConnector::SetModel(Mesh mesh) {

@@ -45,6 +45,7 @@ public:
 		this->vertexGlyphFilter = vertexGlyphFilter;
 	}
 	void executeCallbackBehavior() override {
+		cout << "UPDATE: vertices" << endl;
 		vertexGlyphFilter->RemoveAllInputs();
 		vertexGlyphFilter->AddInputData(verticesData);
 	}
@@ -64,7 +65,7 @@ public:
 		this->linesPolyData = linesPolyData;
 	}
 	void executeCallbackBehavior() override {
-		cout << linesPolyData->GetNumberOfCells() << endl;
+		cout << "UPDATE: edges" << endl;
 		// Add the points to the polydata container
 		linesPolyData->SetPoints(linePts);
 		// Add the lines to the polydata container
@@ -77,23 +78,24 @@ public:
 
 class VtkMeshCallback : public VtkBaseCallback {
 public:
-	VtkMeshCallback(vtkPLYReader* reader, vtkPolyDataMapper* mapper, bool* updatedModel)
-		: m_Reader(reader), m_Mapper(mapper), m_updatedModel(updatedModel) {
+	VtkMeshCallback(vtkPolyData* data, vtkPolyDataMapper* mapper, bool* updatedModel)
+		: m_Data(data), m_Mapper(mapper), m_updatedModel(updatedModel) {
 		activated = false;
 	}
 	void executeCallbackBehavior() override {
-		if (*m_updatedModel && m_Reader->GetOutput() != nullptr) {
-			if (!activated) {
-				m_Mapper->SetInputConnection(m_Reader->GetOutputPort());
-				activated = true;
-			}
+		//cout << "meshData:" << m_Data << endl;
+		if (*m_updatedModel && m_Data != nullptr) {
+			cout << "UPDATE: mesh" << endl;
 			m_Mapper->Update();
-			m_Reader->Update();
 		}
 		*m_updatedModel = false;
 	}
+
+	void SetData(vtkSmartPointer<vtkPolyData> data) {
+		this->m_Data = data;
+	}
 private:
-	vtkPLYReader* m_Reader;
+	vtkPolyData* m_Data;
 	vtkPolyDataMapper* m_Mapper;
 	bool* m_updatedModel;
 	bool activated;
@@ -132,6 +134,7 @@ private:
 
 	// Mesh pipeline fields
 	vtkSmartPointer<vtkPLYReader> meshReader = vtkSmartPointer<vtkPLYReader>::New();
+	vtkSmartPointer<vtkPolyData> meshData;
 	vtkSmartPointer<vtkPolyDataMapper> meshMapper = vtkSmartPointer<vtkOpenGLPolyDataMapper>::New();
 	vtkSmartPointer<vtkActor> meshActor = vtkSmartPointer<vtkActor>::New();
 

@@ -27,6 +27,15 @@ int main(int argc,char* argv[])
             << "Specify input mesh file name at any format in the argument" << endl;
         return 1;
     }
+    std::string str2;
+    if (argc == 3) {
+        ifstream input2;
+        input2.open(argv[2]);
+        if (input2.is_open())
+        {
+			str2 = string((istreambuf_iterator<char>(input2)), istreambuf_iterator<char>());
+		}
+    }
 	
     input.open(argv[1]);
 	if (!input.is_open())
@@ -44,7 +53,12 @@ int main(int argc,char* argv[])
     while (1) {
         // set or update mesh
         // !! you can use OpenMesh::PolyMesh_ArrayKernelT<> in Openmesh library
-        connector.SetModel(mesh);
+        if (i % 2 == 0) {
+            connector.SetModel(mesh);
+        }
+        else {
+            connector.SetModel(str2, ".obj");
+        }
 		// !! or you can use a string of file content like
         // connector.SetModel(str, ".ply"); // NOTE: Specify the file extension
 
