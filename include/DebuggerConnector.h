@@ -1,4 +1,6 @@
 #pragma once
+#ifndef _DEBUGGER_CONNECTOR
+#define _DEBUGGER_CONNECTOR
 #include <Windows.h>
 #include <process.h>
 #include <exception>
@@ -13,12 +15,13 @@
 #include <OpenMesh/Core/IO/MeshIO.hh>
 #include <OpenMesh/Core/IO/Options.hh>
 
-typedef OpenMesh::PolyMesh_ArrayKernelT<>  Mesh;
 using namespace std;
 #define BUF_SIZE 10485760
 using json = nlohmann::json;
 
-#define _USE_MATH_DEFINES
+typedef OpenMesh::PolyMesh_ArrayKernelT<> Mesh;
+
+void inTryBlock(HANDLE write_sem, HANDLE read_sem, LPVOID lpBase, json vertices, json edges, json mesh, bool meshUpdated);
 
 class DebuggerConnector
 {
@@ -39,3 +42,4 @@ private:
     void init();
     bool meshUpdated;
 };
+#endif

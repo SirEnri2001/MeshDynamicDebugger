@@ -35,7 +35,8 @@ VtkDebugger::VtkDebugger() {
 		vertexGlyphFilter,
 		verticesMapper
 	);
-	verticesActor->GetProperty()->SetPointSize(5);
+	verticesActor->GetProperty()->SetPointSize(10);
+	verticesActor->GetProperty()->SetColor(namedColors->GetColor3d("Orange").GetData());
 	verticesActor->SetMapper(verticesMapper);
 	renderer->AddActor(verticesActor);
 
@@ -46,7 +47,7 @@ VtkDebugger::VtkDebugger() {
 		lines,
 		linePts
 	);
-	edgesActor->GetProperty()->SetLineWidth(2);
+	edgesActor->GetProperty()->SetLineWidth(5);
 	edgesActor->GetProperty()->SetColor(namedColors->GetColor3d("Tomato").GetData());
 	edgesActor->SetMapper(edgesMapper);
 	edgesActor->GetProperty()->EdgeVisibilityOn();

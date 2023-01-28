@@ -23,5 +23,8 @@
     <ClInclude Include="..\..\source\ConnectorStaticLib\pch.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\include\DebuggerConnector.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

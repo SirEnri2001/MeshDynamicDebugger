@@ -3,6 +3,7 @@
 #include "pch.h"
 #include"DebuggerConnector.h"
 
+
 DebuggerConnector::DebuggerConnector()
 {
     meshUpdated = false;
@@ -32,7 +33,7 @@ void DebuggerConnector::init()
         // 打开共享内存句柄失败
         printf("OpenMapping Error");
     }
-	
+
 }
 
 void DebuggerConnector::HighlightVertex(double* v)
@@ -44,13 +45,13 @@ void DebuggerConnector::HighlightVertex(double* v)
 void DebuggerConnector::HighlightEdge(double* v1, double* v2) {
     json vert1 = { v1[0],v1[1],v1[2] };
     json vert2 = { v2[0],v2[1],v2[2] };
-	
-	json edge = { vert1,vert2 };
-	edges.push_back(edge);
+
+    json edge = { vert1,vert2 };
+    edges.push_back(edge);
 }
 
 void DebuggerConnector::SetModel(std::string fileDumped, std::string inputExtension) {
-	Mesh mesh;
+    Mesh mesh;
     OpenMesh::IO::Options ropt;
     istringstream iss;
     iss.str(fileDumped);
@@ -63,40 +64,23 @@ void DebuggerConnector::SetModel(std::string fileDumped, std::string inputExtens
 }
 
 void DebuggerConnector::SetModel(Mesh mesh) {
-	ostringstream oss;
-	OpenMesh::IO::Options wopt;
-	OpenMesh::IO::write_mesh(mesh, oss, ".ply");
-	this->mesh = oss.str();
-	meshUpdated = true;
-}
-
-void inTryBlock(HANDLE write_sem, HANDLE read_sem, LPVOID lpBase, json vertices, json edges, json mesh,bool meshUpdated) {
-    WaitForSingleObject(write_sem, INFINITE);
-    // 将共享内存数据拷贝出来
-    json j = { {"a","b"} };
-    if (vertices.size() > 0) {
-        j.push_back({ "vertices",vertices });
-    }
-	if (edges.size() > 0) {
-		j.push_back({ "edges",edges });
-	}
-    if (meshUpdated) {
-        j.push_back({ "mesh_ply",mesh });
-    }
-    memcpy_s(lpBase, BUF_SIZE, (j.dump()+"\0").c_str(), j.dump().size()+1);
-    ReleaseSemaphore(read_sem, 1, NULL);
+    ostringstream oss;
+    OpenMesh::IO::Options wopt;
+    OpenMesh::IO::write_mesh(mesh, oss, ".ply");
+    this->mesh = oss.str();
+    meshUpdated = true;
 }
 
 void DebuggerConnector::Update() {
     try
     {
-        inTryBlock(write_sem, read_sem, lpBase, vertices, edges, mesh,meshUpdated);
-	}
-	catch (const std::exception& e)
-	{
-		std::cout << e.what() << std::endl;
+        inTryBlock(write_sem, read_sem, lpBase, vertices, edges, mesh, meshUpdated);
+    }
+    catch (const std::exception& e)
+    {
+        std::cout << e.what() << std::endl;
         ReleaseSemaphore(read_sem, 1, NULL);
-		cout << "Some errors happened, but connector will continue to work" << endl;
+        cout << "Some errors happened, but connector will continue to work" << endl;
     }
     vertices.clear();
     edges.clear();
@@ -109,5 +93,23 @@ std::string DebuggerConnector::getDumpString() {
         {"edges",edges},
         {"mesh_ply",mesh}
     };
-	return j.dump();
+    return j.dump();
+}
+
+
+void inTryBlock(HANDLE write_sem, HANDLE read_sem, LPVOID lpBase, json vertices, json edges, json mesh, bool meshUpdated) {
+    WaitForSingleObject(write_sem, INFINITE);
+    // 将共享内存数据拷贝出来
+    json j = { {"a","b"} };
+    if (vertices.size() > 0) {
+        j.push_back({ "vertices",vertices });
+    }
+    if (edges.size() > 0) {
+        j.push_back({ "edges",edges });
+    }
+    if (meshUpdated) {
+        j.push_back({ "mesh_ply",mesh });
+    }
+    memcpy_s(lpBase, BUF_SIZE, (j.dump() + "\0").c_str(), j.dump().size() + 1);
+    ReleaseSemaphore(read_sem, 1, NULL);
 }
